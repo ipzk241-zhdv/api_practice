@@ -1,0 +1,64 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+}
+table {
+    /* width: 80%; */
+    margin: 20px auto;
+    border-collapse: collapse;
+    background: white;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+td:not(:first-child), th:not(:first-child) {
+    width: 150px;
+}
+th, td:first-child {
+    background-color: #007bff;
+    color: white;
+}
+.has-subject {
+    background-color: #FFF8B9;
+}
+button {
+    padding: 15px 25px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #45a049;
+}
+
+button:focus {
+    outline: none;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+input, select {
+    width: 80%;
+    padding: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+input[type="text"] {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}

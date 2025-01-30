@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Редагування розкладу</title>
+        <link rel="stylesheet" href="style.css" />
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                const week = urlParams.get("week");
+                const day = urlParams.get("day");
+
+                fetch(`http://127.0.0.1:8000/schedule/${week}/${day}`)
+                    .then((response) => response.json())
+                    .then((data) => renderSchedule(data))
+                    .catch((error) => console.error("Помилка завантаження розкладу:", error));
+            });
+
+            function renderSchedule(scheduleData) {
+                const timeSlots = ["8:30-9:50", "10:00-11:20", "11:40-13:00", "13:30-14:50", "15:00-16:20", "16:30-17:50", "18:00-19:20"];
+                const table = document.getElementById("schedule-table");
+
+                timeSlots.forEach((time) => {
+                    const row = table.insertRow();
+                    const timeCell = row.insertCell();
+                    timeCell.innerText = time;
+
+                    const lesson = scheduleData.find((l) => l.time === time);
+
+                    ["discipline", "teacher", "auditory"].forEach((field) => {
+                        const cell = row.insertCell();
+                        const input = document.createElement("input");
+                        input.type = "text";
+                        input.value = lesson ? lesson[field] : "";
+                        input.addEventListener("input", function () {
+                            updateSchedule(time, field, input.value);
+                        });
+                        cell.appendChild(input);
+                    });
+                });
+            }
+
+            function updateSchedule(time, field, value) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const week = urlParams.get("week");
+                const day = urlParams.get("day");
+
+                const updatedData = {
+                    [field]: value,
+                };
+
+                fetch(`http://127.0.0.1:8000/schedule/${week}/${day}/${time}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(updatedData),
+                })
+                    .then((response) => response.json())
+                    .then((data) => console.log("Збережено:", data))
+                    .catch((error) => console.error("Помилка збереження:", error));
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Редагування розкладу для <span id="group_name"></span></h1>
+        <h2>Таблиця для редагування: <span id="day-name"></span></h2>
+
+        <table border="1" id="schedule-table">
+            <thead>
+                <tr>
+                    <th>Час</th>
+                    <th>Предмет</th>
+                    <th>Викладач</th>
+                    <th>Аудиторія</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <a href="index.html"><button>Повернутись</button></a>
+    </body>
+</html>

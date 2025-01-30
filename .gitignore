@@ -1,0 +1,12 @@
+
+###> symfony/framework-bundle ###
+my_api/.env.local
+my_api/.env.local.php
+my_api/.env.*.local
+my_api/config/secrets/prod/prod.decrypt.private.php
+my_api/public/bundles/
+my_api/var/
+my_api/vendor/
+my_api/.env
+my_api/.env.dev
+###< symfony/framework-bundle ###
