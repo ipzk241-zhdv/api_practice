@@ -1,64 +1,184 @@
+/* Загальні стилі */
 body {
     font-family: Arial, sans-serif;
-    text-align: center;
+    margin: 40px;
+    padding: 0;
     background-color: #f4f4f4;
+    color: #333;
 }
-table {
-    /* width: 80%; */
-    margin: 20px auto;
-    border-collapse: collapse;
-    background: white;
-}
-th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
+
+h1,
+h2 {
     text-align: center;
+    color: #333;
 }
-td:not(:first-child), th:not(:first-child) {
-    width: 150px;
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
 }
-th, td:first-child {
-    background-color: #007bff;
+
+/* Стилі для таблиць */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #4caf50;
     color: white;
+    width: 120px;
 }
-.has-subject {
-    background-color: #FFF8B9;
+
+th:first-child, td:first-child {
+    max-width: 60px;
 }
+
+td {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #ddd;
+}
+
+/* Стилі для кнопок */
 button {
-    padding: 15px 25px;
-    background-color: #4CAF50;
+    padding: 10px 20px;
+    margin-top: 20px;
+    background-color: #4caf50;
     color: white;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
 }
+
 button:hover {
     background-color: #45a049;
 }
 
-button:focus {
-    outline: none;
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
-label {
+/* Секції */
+.section {
+    display: none;
+}
+
+/* Стилі для заголовків секцій */
+.section h2 {
+    margin-bottom: 20px;
+}
+
+/* Стиль для назви групи на сторінці розкладу */
+#group-name {
     font-weight: bold;
-    margin-bottom: 10px;
-    display: block;
+    color: #4caf50;
 }
 
-input, select {
-    width: 80%;
-    padding: 8px;
-    margin: 10px 0;
+/* Стилі для повідомлень */
+.error-message {
+    color: red;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+/* Стиль для відображення пустих полів в таблиці */
+td.empty {
+    background-color: #eeeeee;
+}
+
+/* Стилі для кнопок повернення */
+#back-to-faculties,
+#back-to-courses,
+#back-to-groups {
+    margin-top: 10px;
+    font-size: 16px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#back-to-faculties:hover,
+#back-to-courses:hover,
+#back-to-groups:hover {
+    background-color: #0056b3;
+}
+#schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#schedule-table th,
+#schedule-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    vertical-align: top;
+}
+
+#schedule-table th {
+    background-color: #4caf50;
+    color: white;
+    width: 120px;  /* Фіксована ширина для заголовків */
+}
+
+#schedule-table td {
+    background-color: #f9f9f9;
+    width: 120px !important;  /* Фіксована ширина для клітинок */
+    height: 100px;
+}
+
+#schedule-table td.empty {
+    background-color: #ffffff;  /* Білий фон для порожніх клітинок */
+}
+
+#schedule-table td:not(.empty) {
+    background-color: #e0e0e0;  /* Сірий фон для заповнених клітинок */
+}
+
+.schedule-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+}
+
+.schedule-cell .discipline {
+    font-weight: bold;
+    color: #4caf50;
+}
+
+.schedule-cell .teacher,
+.schedule-cell .auditory {
     font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+    color: #333;
 }
 
-input[type="text"] {
-    margin-bottom: 20px;
+.schedule-cell input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    font-size: 14px;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}

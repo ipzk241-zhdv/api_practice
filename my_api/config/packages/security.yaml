@@ -1,0 +1,28 @@
+security:
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\Users
+                property: login # Укажите поле, которое будет использоваться для поиска пользователя (например, login или username)
+    password_hashers:
+        App\Entity\Users:
+            algorithm: auto
+    firewalls:
+        login:
+            pattern: ^/api/login
+            stateless: true
+            json_login:
+                check_path: /api/login # Убедитесь, что это правильно настроено
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+                provider: app_user_provider # Здесь указываем провайдера
+
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+
+    access_control:
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

@@ -1,84 +1,89 @@
 <!DOCTYPE html>
-<html lang="uk">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Розклад занять</title>
-        <link rel="stylesheet" href="style.css" />
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                fetch("http://127.0.0.1:8000/schedule")
-                    .then((response) => response.json())
-                    .then((data) => renderSchedule(data))
-                    .catch((error) => console.error("Помилка завантаження розкладу:", error));
-            });
-
-            function renderSchedule(scheduleData) {
-                const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-                const timeSlots = ["8:30-9:50", "10:00-11:20", "11:40-13:00", "13:30-14:50", "15:00-16:20", "16:30-17:50", "18:00-19:20"];
-
-                ["firstweek", "secondweek"].forEach((week) => {
-                    const table = document.getElementById(week);
-                    days.forEach((day) => {
-                        const row = table.insertRow();
-                        row.insertCell().innerText = day.charAt(0).toUpperCase() + day.slice(1);
-                        timeSlots.forEach((time) => {
-                            const cell = row.insertCell();
-                            const lessons = scheduleData.schedule[week][day] || [];
-                            if (Array.isArray(lessons)) {
-                                const lesson = lessons.find((l) => l.time === time);
-                                cell.innerText = "-";
-                                if (lesson) {
-                                    cell.innerText = `${lesson.discipline}\n${lesson.teacher}\n${lesson.auditory}`;
-                                    cell.classList.add("has-subject");
-                                }
-                            } else {
-                                cell.innerText = "-";
-                            }
-                        });
-
-                        const editCell = row.insertCell();
-                        const editButton = document.createElement("button");
-                        editButton.innerText = "Edit";
-                        editButton.onclick = function () {
-                            window.location.href = `edit.html?week=${week}&day=${day}`;
-                        };
-                        editCell.appendChild(editButton);
-                    });
-                });
-            }
-        </script>
-    </head>
-    <body>
-        <h1>Розклад занять для групи <span id="group_name"></span></h1>
-        <h2>Перша неділя</h2>
-        <table border="1" id="firstweek">
-            <tr>
-                <th>День</th>
-                <th>8:30-9:50</th>
-                <th>10:00-11:20</th>
-                <th>11:40-13:00</th>
-                <th>13:30-14:50</th>
-                <th>15:00-16:20</th>
-                <th>16:30-17:50</th>
-                <th>18:00-19:20</th>
-                <th>Редагувати</th>
-            </tr>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <h1>Розклад</h1>
+    
+    <div id="faculties-section">
+        <h2>Факультети</h2>
+        <table id="faculties-table">
+            <thead>
+                <tr>
+                    <th>Назва факультету</th>
+                    <th>Коротка назва</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
+    </div>
 
-        <h2>Друга неділя</h2>
-        <table border="1" id="secondweek">
-            <tr>
-                <th>День</th>
-                <th>8:30-9:50</th>
-                <th>10:00-11:20</th>
-                <th>11:40-13:00</th>
-                <th>13:30-14:50</th>
-                <th>15:00-16:20</th>
-                <th>16:30-17:50</th>
-                <th>18:00-19:20</th>
-                <th>Редагувати</th>
-            </tr>
+    <div id="courses-section" style="display:none;">
+        <button id="back-to-faculties">Назад до факультетів</button>
+        <h2>Курси</h2>
+        <table id="courses-table">
+            <thead>
+                <tr>
+                    <th>Назва курсу</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
-    </body>
+    </div>
+
+    <div id="groups-section" style="display:none;">
+        <button id="back-to-courses">Назад до курсів</button>
+        <h2>Групи</h2>
+        <table id="groups-table">
+            <thead>
+                <tr>
+                    <th>Назва групи</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="schedule-section" class="section">
+        <button id="back-to-groups">Назад до груп</button>
+        <h2>Розклад для групи <span id="group-name"></span></h2>
+        <table id="first-week-schedule">
+            <thead>
+                <tr>
+                    <th>Час</th>
+                    <th>Понеділок</th>
+                    <th>Вівторок</th>
+                    <th>Середа</th>
+                    <th>Четвер</th>
+                    <th>П'ятниця</th>
+                    <th>Субота</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Динамічні рядки часу будуть тут -->
+            </tbody>
+        </table>
+        <table id="second-week-schedule">
+            <thead>
+                <tr>
+                    <th>Час</th>
+                    <th>Понеділок</th>
+                    <th>Вівторок</th>
+                    <th>Середа</th>
+                    <th>Четвер</th>
+                    <th>П'ятниця</th>
+                    <th>Субота</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Динамічні рядки часу будуть тут -->
+            </tbody>
+        </table>
+    </div>
+</body>
 </html>
