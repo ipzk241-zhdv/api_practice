@@ -17,100 +17,58 @@ class FacultyController extends AbstractController
         $this->ScheduleService = $scheduleService;
     }
 
-    // Метод для получения курсов на факультете
-    #[Route('/api/schedule/{facultyShortName}', methods: ['GET'])]
-    public function getScheduleCoursesByFaculty(string $facultyShortName): JsonResponse
-    {
-        $scheduleData = $this->ScheduleService->loadScheduleData();
-        $faculty = $this->ScheduleService->findFacultyByShortName($scheduleData, $facultyShortName);
-
-        if ($faculty === null) {
-            return $this->json(['error' => 'Faculty not found'], 404);
-        }
-
-        return $this->json($faculty['course']);
-    }
-
     // Метод для создания нового факультета
     #[Route('/api/faculty/create', methods: ['POST'])]
     public function createFaculty(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-
-        // Перевірка, чи надано назву та коротку назву
         if (empty($data['name']) || empty($data['shortname'])) {
-            return $this->json(['error' => 'Both name and shortname are required'], 400);
+            return $this->ScheduleService->jsonResponse(false, 'Both "name" and "shortname" are required', status: 400);
         }
 
-        // Логіка для створення факультету (можна додати в Service або безпосередньо тут)
+        $faculty = $this->ScheduleService->find($data['shortname']);
+        if (!$faculty instanceof JsonResponse) {
+            return $this->ScheduleService->jsonResponse(false, 'Faculty with this "shortname" already exist', status: 400);
+        }
+
         $newFaculty = [
             'name' => $data['name'],
             'shortname' => $data['shortname'],
-            'course' => [] // Початково порожній масив курсів
+            'course' => []
         ];
 
-        // Можна зберегти новий факультет в базі даних або у файлі
-        // Для прикладу, додамо до файлу
-        $scheduleData = $this->ScheduleService->loadScheduleData();
-        $scheduleData[] = $newFaculty;
-        file_put_contents('schedule.json', json_encode($scheduleData, JSON_PRETTY_PRINT));
-
-        return $this->json(['message' => 'Faculty created successfully', 'faculty' => $newFaculty], 201);
+        return $this->ScheduleService->saveFaculty($newFaculty);
     }
-
+    
     // Метод для оновлення факультету
-    #[Route('/api/faculty/{facultyShortName}', methods: ['PATCH'])]
-    public function updateFaculty(string $facultyShortName, Request $request): JsonResponse
+    #[Route('/api/{oldFacultyShortName}', methods: ['PATCH'])]
+    public function updateFaculty(string $oldFacultyShortName, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
-        // Перевірка, чи надано хоча б одне поле для оновлення
-        if (empty($data['name']) && empty($data['shortname'])) {
-            return $this->json(['error' => 'At least one of name or shortname is required'], 400);
+        if (!isset($data['name']) && !isset($data['shortname'])) {
+            return $this->ScheduleService->jsonResponse(false, 'At least one of "name" or "shortname" fields are required', status: 400);
         }
 
-        // Завантаження даних розкладу
-        $scheduleData = $this->ScheduleService->loadScheduleData();
-        $faculty = $this->ScheduleService->findFacultyByShortName($scheduleData, $facultyShortName);
-
-        if ($faculty === null) {
-            return $this->json(['error' => 'Faculty not found'], 404);
+        $faculty = $this->ScheduleService->find($oldFacultyShortName);
+        if ($faculty instanceof JsonResponse) {
+            return $faculty;
         }
 
-        // Оновлення даних факультету
-        if (!empty($data['name'])) {
-            $faculty['name'] = $data['name'];
+        if (isset($data['name'])) {
+            $faculty['faculty']['name'] = $data['name'];
         }
-        if (!empty($data['shortname'])) {
-            $faculty['shortname'] = $data['shortname'];
+        if (isset($data['shortname'])) {
+            $faculty['faculty']['shortname'] = $data['shortname'];
         }
 
-        // Збереження оновлених даних
-        file_put_contents('schedule.json', json_encode($scheduleData, JSON_PRETTY_PRINT));
-
-        return $this->json(['message' => 'Faculty updated successfully', 'faculty' => $faculty]);
+        return $this->ScheduleService->saveFaculty($faculty['faculty'], $oldFacultyShortName);
     }
 
     // Метод для удаления факультета и его вмісту
-    #[Route('/api/faculty/{facultyShortName}', methods: ['DELETE'])]
+    #[Route('/api/{facultyShortName}', methods: ['DELETE'])]
     public function deleteFaculty(string $facultyShortName): JsonResponse
     {
-        // Завантаження даних розкладу
-        $scheduleData = $this->ScheduleService->loadScheduleData();
-
-        // Пошук факультету за коротким ім'ям
-        $facultyKey = array_search($facultyShortName, array_column($scheduleData, 'shortname'));
-
-        if ($facultyKey === false) {
-            return $this->json(['error' => 'Faculty not found'], 404);
-        }
-
-        // Видалення факультету і всього його вмісту
-        array_splice($scheduleData, $facultyKey, 1);
-
-        // Збереження оновлених даних
-        file_put_contents('schedule.json', json_encode($scheduleData, JSON_PRETTY_PRINT));
-
-        return $this->json(['message' => 'Faculty and its contents deleted successfully']);
+        return $this->ScheduleService->deleteFaculty($facultyShortName);
     }
 }

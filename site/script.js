@@ -31,7 +31,7 @@ function fetchFaculties() {
         .then((data) => {
             const facultiesTableBody = document.querySelector("#faculties-table tbody");
             facultiesTableBody.innerHTML = "";
-            data.forEach((faculty) => {
+            data.data.forEach((faculty) => {
                 const row = document.createElement("tr");
                 const nameCell = document.createElement("td");
                 nameCell.textContent = faculty.name;
@@ -61,7 +61,7 @@ function loadCourses(facultyShortname) {
         .then((data) => {
             const coursesTableBody = document.querySelector("#courses-table tbody");
             coursesTableBody.innerHTML = "";
-            data.forEach((courseName) => {
+            data.data.forEach((courseName) => {
                 const row = document.createElement("tr");
                 const nameCell = document.createElement("td");
                 nameCell.textContent = courseName;
@@ -88,7 +88,7 @@ function loadGroups(facultyShortname, courseName) {
         .then((data) => {
             const groupsTableBody = document.querySelector("#groups-table tbody");
             groupsTableBody.innerHTML = "";
-            data.forEach((groupName) => {
+            data.data.forEach((groupName) => {
                 const row = document.createElement("tr");
                 const nameCell = document.createElement("td");
                 nameCell.textContent = groupName;

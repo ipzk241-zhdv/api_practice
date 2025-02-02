@@ -6,7 +6,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity]
-#[ORM\Table(name: "users")] // Ensure the table name is something other than 'user'
+#[ORM\Table(name: "users")]
 class Users implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
@@ -20,7 +20,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return $this->login; // змінив на login
+        return $this->login;
     }
 
     public function getRoles(): array

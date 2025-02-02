@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Users;
+use App\Service\ServiceSchedule;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,10 +14,12 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 class LoginController extends AbstractController
 {
     private $entityManager;
+    private $ScheduleService;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ServiceSchedule $scheduleService)
     {
         $this->entityManager = $entityManager;
+        $this->ScheduleService = $scheduleService;
     }
 
     #[Route('/api/login', methods: ['POST'])]
@@ -27,16 +30,13 @@ class LoginController extends AbstractController
         $login = $data['username'];
         $password = $data['password'];
 
-        // Используем EntityManager для получения репозитория
+        $invalidInput = $login === null || strlen($login) == 0 || $password === null || strlen($password) == 0;
         $user = $this->entityManager->getRepository(Users::class)->findOneBy(['login' => $login]);
-
-        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
-            return new JsonResponse(['error' => 'Invalid credentials'], 401);
+        if ($invalidInput || !$user || !$passwordHasher->isPasswordValid($user, $password)) {
+            return $this->ScheduleService->jsonResponse(false, "Invalid credentials", status: 401);
         }
 
-        // Генерация токена
         $token = $JWTManager->create($user);
-
-        return new JsonResponse(['token' => $token]);
+        return $this->ScheduleService->jsonResponse(true, "Authorized successfully", ['token' => $token]);
     }
 }
