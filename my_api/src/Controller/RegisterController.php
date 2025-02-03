@@ -48,6 +48,6 @@ class RegisterController extends AbstractController
 
         $token = $JWTManager->create($user);
 
-        return $this->ScheduleService->jsonResponse(true, "User registered successfully", ['token' => $token], 201);
+        return $this->ScheduleService->jsonResponse(true, "User registered successfully", ['token' => $token]);
     }
 }

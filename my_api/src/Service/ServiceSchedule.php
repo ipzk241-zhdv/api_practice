@@ -174,6 +174,9 @@ class ServiceSchedule
                         return $this->jsonResponse(true, 'Course updated successfully', $courseData);
                     }
                 }
+                $faculty['course'][] = $courseData;
+                $this->saveScheduleData($scheduleData);
+                return $this->jsonResponse(true, 'Course added successfully', $courseData);
             }
         }
         return $this->jsonResponse(false, 'Faculty not found', null, 404);

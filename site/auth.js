@@ -69,8 +69,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
 
-            if (response.ok) {
-                const token = data.token;
+            if (response.ok || response.status === 201) {
+                let token = data.token;
+                if (token == undefined) {
+                    token = data.data.token;
+                }
                 localStorage.setItem("token", token);
                 window.location.href = "index.html";
             } else {

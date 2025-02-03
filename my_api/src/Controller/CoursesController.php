@@ -31,6 +31,11 @@ class CoursesController extends AbstractController
             return $this->ScheduleService->jsonResponse(false, "Course with this name already exist", status: 409);
         }
 
+        $entities = $this->ScheduleService->find($facultyShortName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
+        }
+
         $newCourse = [
             'name' => $data['name'],
             'groups' => []
