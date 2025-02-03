@@ -5,3 +5,6 @@ my_api/public/bundles/
 my_api/var/
 my_api/vendor/
 ###< symfony/framework-bundle ###
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
