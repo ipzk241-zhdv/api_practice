@@ -1,22 +1,28 @@
 /* Загальні стилі */
 body {
-    font-family: Arial, sans-serif;
-    margin: 40px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
     padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #f7f7f7;
+    color: #444;
+    line-height: 1.6;
 }
 
 h1,
 h2 {
     text-align: center;
     color: #333;
+    margin-bottom: 20px;
 }
 
+/* Контейнер для вмісту */
 .container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 /* Стилі для таблиць */
@@ -26,43 +32,50 @@ table {
     margin: 20px 0;
     background-color: #fff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 th,
 td {
-    padding: 10px;
+    padding: 12px 15px;
     text-align: left;
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
 }
 
 th {
     background-color: #4caf50;
-    color: white;
-    width: 120px;
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
-th:first-child, td:first-child {
-    max-width: 60px;
+th:first-child,
+td:first-child {
+    max-width: 80px;
 }
 
 td {
-    background-color: #f9f9f9;
+    background-color: #fafafa;
+    transition: background-color 0.3s;
 }
 
-tr:hover {
-    background-color: #ddd;
+tr:hover td {
+    background-color: #f1f1f1;
 }
 
 /* Стилі для кнопок */
 button {
     padding: 10px 20px;
-    margin-top: 20px;
+    margin: 5px;
     background-color: #4caf50;
-    color: white;
+    color: #fff;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px;
+    border-radius: 4px;
+    font-size: 15px;
+    transition: background-color 0.3s;
 }
 
 button:hover {
@@ -77,11 +90,16 @@ button:disabled {
 /* Секції */
 .section {
     display: none;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 4px;
+    margin-bottom: 20px;
 }
 
-/* Стилі для заголовків секцій */
+/* Заголовки секцій */
 .section h2 {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    color: #4caf50;
 }
 
 /* Стиль для назви групи на сторінці розкладу */
@@ -90,19 +108,20 @@ button:disabled {
     color: #4caf50;
 }
 
-/* Стилі для повідомлень */
+/* Повідомлення про помилки */
 .error-message {
-    color: red;
+    color: #d9534f;
     font-size: 16px;
     margin-top: 20px;
+    text-align: center;
 }
 
-/* Стиль для відображення пустих полів в таблиці */
+/* Порожні клітинки таблиць */
 td.empty {
-    background-color: #eeeeee;
+    background-color: #f0f0f0;
 }
 
-/* Стилі для кнопок повернення */
+/* Кнопки повернення */
 #back-to-faculties,
 #back-to-courses,
 #back-to-groups {
@@ -110,10 +129,11 @@ td.empty {
     font-size: 16px;
     padding: 8px 16px;
     background-color: #007bff;
-    color: white;
+    color: #fff;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
 #back-to-faculties:hover,
@@ -121,6 +141,8 @@ td.empty {
 #back-to-groups:hover {
     background-color: #0056b3;
 }
+
+/* Стилі для розкладу */
 #schedule-table {
     width: 100%;
     border-collapse: collapse;
@@ -133,35 +155,41 @@ td.empty {
 #schedule-table td {
     padding: 10px;
     text-align: center;
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
     vertical-align: top;
 }
 
 #schedule-table th {
     background-color: #4caf50;
-    color: white;
-    width: 120px;  /* Фіксована ширина для заголовків */
+    color: #fff;
+    font-weight: 600;
+    width: 120px;
 }
 
 #schedule-table td {
-    background-color: #f9f9f9;
-    width: 120px !important;  /* Фіксована ширина для клітинок */
+    background-color: #fafafa;
+    width: 120px !important;
     height: 100px;
+    position: relative;
 }
 
+/* Для порожніх клітинок розкладу */
 #schedule-table td.empty {
-    background-color: #ffffff;  /* Білий фон для порожніх клітинок */
+    background-color: #fff;
 }
 
+/* Для заповнених клітинок розкладу */
 #schedule-table td:not(.empty) {
-    background-color: #e0e0e0;  /* Сірий фон для заповнених клітинок */
+    background-color: #e0e0e0;
 }
 
+/* Стилі для елементів розкладу всередині клітинки */
 .schedule-cell {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: 5px;
+    font-size: 14px;
 }
 
 .schedule-cell .discipline {
@@ -171,14 +199,64 @@ td.empty {
 
 .schedule-cell .teacher,
 .schedule-cell .auditory {
-    font-size: 14px;
-    color: #333;
+    color: #555;
+}
+
+.schedule-cell label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 2px;
 }
 
 .schedule-cell input {
     width: 100%;
-    padding: 5px;
-    margin-top: 5px;
+    padding: 4px 6px;
+    margin-top: 3px;
     font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
 }
 
+/* Додаткове оформлення для форм (input) */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="search"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus {
+    border-color: #4caf50;
+    outline: none;
+}
+
+/* Адаптивність: зменшення розмірів таблиці на менших екранах */
+@media (max-width: 768px) {
+    th,
+    td {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    #schedule-table th,
+    #schedule-table td {
+        padding: 6px;
+        font-size: 12px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}

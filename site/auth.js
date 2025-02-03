@@ -1,4 +1,3 @@
-// Режим формы: 'login' или 'register'
 let mode = "login";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -33,13 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     authForm.addEventListener("submit", async (event) => {
-        event.preventDefault(); // відміняємо стандартну поведінку форми
+        event.preventDefault();
 
-        // Отримуємо дані з форми
         const login = document.getElementById("login").value.trim();
         const password = document.getElementById("password").value.trim();
 
-        // Для реєстрації перевіряємо підтвердження пароля
         let confirmPassword = null;
         if (mode === "register") {
             confirmPassword = document.getElementById("confirm-password").value.trim();
@@ -49,13 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Формуємо дані для запиту
         const payload = {
             username: login,
             password: password,
         };
 
-        // Визначаємо URL запиту в залежності від режиму
         let url = "";
         if (mode === "login") {
             url = "http://127.0.0.1:8000/api/login";
@@ -75,10 +70,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (response.ok) {
-                // Очікуємо, що API поверне JWT-токен
                 const token = data.token;
                 localStorage.setItem("token", token);
-                // Перенаправляємо на головну сторінку (наприклад, index.html)
                 window.location.href = "index.html";
             } else {
                 messageDiv.textContent = data.error || "Сталася помилка. Спробуйте ще раз.";
