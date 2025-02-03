@@ -17,7 +17,7 @@ class CoursesController extends AbstractController
         $this->ScheduleService = $scheduleService;
     }
 
-    // Метод для создания нового курса
+    // Створення нового курсу
     #[Route('/api/{facultyShortName}/createCourse', methods: ['POST'])]
     public function createCourse(string $facultyShortName, Request $request): JsonResponse
     {
@@ -26,9 +26,9 @@ class CoursesController extends AbstractController
             return $this->ScheduleService->jsonResponse(false, 'Course "name" are required', status: 400);
         }
 
-        $course = $this->ScheduleService->find($facultyShortName, $data['name']);
-        if (!$course instanceof JsonResponse) {
-            return $this->ScheduleService->jsonResponse(false, "Course with this name already exist", status: 400);
+        $entities = $this->ScheduleService->find($facultyShortName, $data['name']);
+        if (!$entities instanceof JsonResponse) {
+            return $this->ScheduleService->jsonResponse(false, "Course with this name already exist", status: 409);
         }
 
         $newCourse = [
@@ -36,16 +36,10 @@ class CoursesController extends AbstractController
             'groups' => []
         ];
 
-        $faculty = $this->ScheduleService->find($facultyShortName);
-        if ($faculty instanceof JsonResponse) {
-            return $faculty;
-        }
-
-        $faculty['faculty']['course'][] = $newCourse;
-
-        return $this->ScheduleService->saveFaculty($faculty['faculty']);
+        return $this->ScheduleService->saveCourse($facultyShortName, $newCourse);
     }
 
+    // Зміна назви курсу
     #[Route('/api/{facultyShortName}/{oldCourseName}', methods: ['PATCH'])]
     public function updateCourse(string $facultyShortName, string $oldCourseName, Request $request): JsonResponse
     {
@@ -58,26 +52,34 @@ class CoursesController extends AbstractController
         if ($entities instanceof JsonResponse) {
             return $entities;
         }
+        $course = $entities['course'];
 
-        $entities['course']['name'] = $data['name'];
+        $entities = $this->ScheduleService->find($facultyShortName, $data['name']);
+        if (!$entities instanceof JsonResponse) {
+            return $this->ScheduleService->jsonResponse(false, "Course with this name already exist", status: 409);
+        }
 
-        return $this->ScheduleService->saveCourse($facultyShortName, $entities['course']);
+        $course['name'] = $data['name'];
+        return $this->ScheduleService->saveCourse($facultyShortName, $course, $oldCourseName);
     }
 
-    // Метод для удаления курса и его вмісту
+    // Видалення курсу
     #[Route('/api/{facultyShortName}/{courseName}', methods: ['DELETE'])]
     public function deleteCourse(string $facultyShortName, string $courseName): JsonResponse
     {
-        $faculty = $this->ScheduleService->find($facultyShortName);
-
-        $courseKey = array_search($courseName, array_column($faculty['faculty']['course'], 'name'));
-
-        if ($courseKey === false) {
-            return $this->ScheduleService->jsonResponse(false, "Couse not found", status: 404);
+        $entities = $this->ScheduleService->find($facultyShortName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
         }
 
-        array_splice($faculty['faculty']['course'], $courseKey, 1);
+        $faculty = $entities['faculty'];
+        $courseKey = array_search($courseName, array_column($faculty['course'], 'name'));
 
-        return $this->ScheduleService->saveFaculty($faculty['faculty']);
+        if ($courseKey === false) {
+            return $this->ScheduleService->jsonResponse(false, "Course not found", status: 404);
+        }
+
+        array_splice($faculty['course'], $courseKey, 1);
+        return $this->ScheduleService->saveFaculty($faculty);
     }
 }

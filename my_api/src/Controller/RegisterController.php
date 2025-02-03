@@ -23,16 +23,17 @@ class RegisterController extends AbstractController
         $this->ScheduleService = $scheduleService;
     }
 
+    // Реєстрація, jwt + sql server
     #[Route('/api/register', methods: ['POST'])]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        $login = $data['username'];
-        $password = $data['password'];
-
-        if (!$login || !$password) {
+        $data = json_decode($request->getContent(), true);        
+        if (!isset($data['username'], $data['password'])) {
             return $this->ScheduleService->jsonResponse(false, "Invalid credentials", status: 400);
         }
+
+        $login = $data['username'];
+        $password = $data['password'];
 
         $loginAlreadyInUse = (bool) $this->entityManager->getRepository(Users::class)->findOneBy(['login' => $login]);
         if ($loginAlreadyInUse) {

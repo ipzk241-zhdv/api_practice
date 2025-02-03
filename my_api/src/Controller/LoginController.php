@@ -22,17 +22,20 @@ class LoginController extends AbstractController
         $this->ScheduleService = $scheduleService;
     }
 
+    // Авторизація, jwt + sql server
     #[Route('/api/login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        if (!isset($data['username'], $data['password'])) {
+            return $this->ScheduleService->jsonResponse(false, "Invalid credentials", status: 400);
+        }
 
         $login = $data['username'];
         $password = $data['password'];
 
-        $invalidInput = $login === null || strlen($login) == 0 || $password === null || strlen($password) == 0;
         $user = $this->entityManager->getRepository(Users::class)->findOneBy(['login' => $login]);
-        if ($invalidInput || !$user || !$passwordHasher->isPasswordValid($user, $password)) {
+        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
             return $this->ScheduleService->jsonResponse(false, "Invalid credentials", status: 401);
         }
 

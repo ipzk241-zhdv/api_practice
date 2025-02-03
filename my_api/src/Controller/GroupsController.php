@@ -34,13 +34,13 @@ class GroupsController extends AbstractController
     public function createGroup(Request $request, string $facultyName, string $courseName): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        if (!isset($data['group_name']) || strlen($data['group_name'] == 0)) {
-            return $this->ScheduleService->jsonResponse(false, '"group_name" is required', status: 400);
+        if (!isset($data['group_name'])) {
+            return $this->ScheduleService->jsonResponse(false, '"group_name" is required', status: 409);
         }
 
-        $faculty = $this->ScheduleService->find($facultyName, $courseName, $data['group_name']);
-        if (!$faculty instanceof JsonResponse) {
-            return $this->ScheduleService->jsonResponse(false, 'Group with this "group_name" already exist', status: 400);
+        $entities = $this->ScheduleService->find($facultyName, $courseName, $data['group_name']);
+        if (!$entities instanceof JsonResponse) {
+            return $this->ScheduleService->jsonResponse(false, 'Group with this "group_name" already exist', status: 409);
         }
 
         $newGroup = [
@@ -77,46 +77,132 @@ class GroupsController extends AbstractController
             return $this->ScheduleService->jsonResponse(false, '"group_name" is required', status: 400);
         }
 
-        $group = $this->ScheduleService->find($facultyName, $courseName, $oldGroupName);
-        if ($group instanceof JsonResponse) {
-            return $group;
+        $entities = $this->ScheduleService->find($facultyName, $courseName, $oldGroupName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
+        }
+        $group = $entities['group'];
+
+        $entities = $this->ScheduleService->find($facultyName, $courseName, $data['group_name']);
+        if (!$entities instanceof JsonResponse) {
+            return $this->ScheduleService->jsonResponse(false, 'Group with this "group_name" already exist', status: 409);
         }
 
         $group['group_name'] = $data['group_name'];
-        return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
+        return $this->ScheduleService->saveGroup($facultyName, $courseName, $group, $oldGroupName);
     }
 
-    // Метод для видалення групи
-    #[Route('/schedule/{facultyName}/{courseName}/{groupName}', methods: ['DELETE'])]
+    // Видалення групи
+    #[Route('/api/{facultyName}/{courseName}/{groupName}', methods: ['DELETE'])]
     public function deleteGroup(string $facultyName, string $courseName, string $groupName): JsonResponse
     {
-        $course = $this->ScheduleService->find($facultyName, $courseName);
-        if ($course instanceof JsonResponse) {
-            return $course;
+        $entities = $this->ScheduleService->find($facultyName, $courseName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
         }
 
-        $groupKey = array_search($groupName, array_column($course['groups'], 'group_name'));
-        if (!$groupKey) {
+        $groupKey = array_search($groupName, array_column($entities['course']['groups'], 'group_name'));
+        if ($groupKey === false) {
             return $this->ScheduleService->jsonResponse(false, "Group not found", status: 404);
         }
 
-        array_splice($course['groups'], $groupKey, 1);
-        return $this->ScheduleService->saveCourse($facultyName, $course);
+        array_splice($entities['course']['groups'], $groupKey, 1);
+        return $this->ScheduleService->saveCourse($facultyName, $entities['course']);
     }
 
+    // Створення заняття
+    #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['POST'])]
+    public function createClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['time'], $data['week'], $data['day'])) {
+            return $this->ScheduleService->jsonResponse(false, '"week", "day" and "time" and at least one of "discipline", "auditory", "teacher" are required', status: 400);
+        }
 
-    // TODO
-    // // Метод для створення заняття
-    // #[Route('/schedule/{facultyName}/{courseName}/groups/{groupName}/classes', methods: ['POST'])]
-    // public function createClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
-    // {
-    //     return;
-    // }
+        if (!isset($data['auditory']) && !isset($data['teacher']) && !isset($data['discipline'])) {
+            return $this->ScheduleService->jsonResponse(false, 'At least one of "discipline", "auditory", "teacher" are required', status: 400);
+        }
 
-    // // Метод для редагування занятия
-    // #[Route('/schedule/{facultyName}/{courseName}/groups/{groupName}/classes/{index}', methods: ['PATCH'])]
-    // public function updateClass(Request $request, string $facultyName, string $courseName, string $groupName, int $index): JsonResponse
-    // {
-    //     return;
-    // }
+        $entities = $this->ScheduleService->find($facultyName, $courseName, $groupName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
+        }
+
+        foreach ($data as $key => $value) {
+            $$key = $value;
+        }
+
+        $group = $entities['group'];
+        array_push($group['schedule'][$week][$day], [
+            'time' => $time,
+            'discipline' => $discipline ?? '',
+            'teacher' => $teacher ?? '',
+            'auditory' => $auditory ?? ''
+        ]);
+
+        return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
+    }
+
+    // Редагування заннятя
+    #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['PATCH'])]
+    public function updateClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['time'], $data['week'], $data['day'])) {
+            return $this->ScheduleService->jsonResponse(false, '"week", "day" and "time" and at least one of "discipline", "auditory", "teacher" are required', status: 400);
+        }
+
+        if (!isset($data['auditory']) && !isset($data['teacher']) && !isset($data['discipline'])) {
+            return $this->ScheduleService->jsonResponse(false, 'At least one of "discipline", "auditory", "teacher" are required', status: 400);
+        }
+
+        $entities = $this->ScheduleService->find($facultyName, $courseName, $groupName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
+        }
+
+        $group = $entities['group'];
+        foreach ($data as $key => $value) {
+            $$key = $value;
+        }
+
+        $classesKey = array_search($time, array_column($group['schedule'][$week][$day], 'time'));
+        if ($classesKey === false) {
+            return $this->ScheduleService->jsonResponse(false, "Classes on that time not found", status: 404);
+        }
+
+        if (isset($teacher)) $group['schedule'][$week][$day][$classesKey]['teacher'] = $teacher;
+        if (isset($discipline)) $group['schedule'][$week][$day][$classesKey]['discipline'] = $discipline;
+        if (isset($auditory)) $group['schedule'][$week][$day][$classesKey]['auditory'] = $auditory;
+
+        return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
+    }
+
+        // Видалення заннятя
+        #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['DELETE'])]
+        public function deleteClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
+        {
+            $data = json_decode($request->getContent(), true);
+            if (!isset($data['time'], $data['week'], $data['day'])) {
+                return $this->ScheduleService->jsonResponse(false, '"time", "week" and "day" are required', status: 400);
+            }
+    
+            $entities = $this->ScheduleService->find($facultyName, $courseName, $groupName);
+            if ($entities instanceof JsonResponse) {
+                return $entities;
+            }
+    
+            $group = $entities['group'];
+            foreach ($data as $key => $value) {
+                $$key = $value;
+            }
+    
+            $classesKey = array_search($time, array_column($group['schedule'][$week][$day], 'time'));
+            if ($classesKey === false) {
+                return $this->ScheduleService->jsonResponse(false, "Classes on that time not found", status: 404);
+            }
+
+            array_splice($group['schedule'][$week][$day], $classesKey, 1);
+            return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
+        }
 }

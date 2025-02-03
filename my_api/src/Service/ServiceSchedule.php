@@ -49,6 +49,7 @@ class ServiceSchedule
         return null;
     }
 
+    // Пошук за вказаними параметрами
     public function find(string $facultyName, ?string $courseName = null, ?string $groupName = null)
     {
         $scheduleData = $this->loadScheduleData();
@@ -78,44 +79,46 @@ class ServiceSchedule
         return $result;
     }
 
+    // Список факультетів
     public function FacultiesList()
     {
         $scheduleData = $this->loadScheduleData();
 
+        if (count($scheduleData) < 1) return [];
         $faculties = array_map(function ($faculty) {
             return [
                 'name' => $faculty['name'],
                 'shortname' => $faculty['shortname']
             ];
         }, $scheduleData);
-
         return $faculties;
     }
 
+    // Список курсів факультету
     public function FacultyCoursesList($facultyShortname)
     {
-        $scheduleData = $this->loadScheduleData();
-        $faculty = $this->findFacultyByShortname($scheduleData, $facultyShortname);
-
-        if ($faculty === null) {
-            return $this->jsonResponse(false, "Faculty not found", status: 404);
+        $entities = $this->find($facultyShortname);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
         }
 
-        $courseNames = array_map(fn($course) => $course['name'], $faculty['course']);
-
+        $courses = $entities['faculty']['course'];
+        if (count($courses) < 1) return [];
+        $courseNames = array_map(fn($course) => $course['name'], $courses);
         return $courseNames;
     }
 
+    // Список груп курсу
     public function CourseGroupsList($facultyShortname, $courseName)
     {
-        $scheduleData = $this->loadScheduleData();
-        $course = $this->find($facultyShortname, $courseName);
-        if ($course instanceof JsonResponse) {
-            return $course;
+        $entities = $this->find($facultyShortname, $courseName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
         }
 
-        $groupNames = array_map(fn($group) => $group['group_name'], $course);
-
+        $groups = $entities['course']['groups'];
+        if (count($groups) < 1) return [];
+        $groupNames = array_map(fn($group) => $group['group_name'], $groups);
         return $groupNames;
     }
 
@@ -147,7 +150,7 @@ class ServiceSchedule
         $scheduleData = $this->loadScheduleData();
 
         foreach ($scheduleData as &$faculty) {
-            if ($oldFacultyShortName === null ? $facultyData['shortname'] : $oldFacultyShortName === $faculty['shortname']) {
+            if (($oldFacultyShortName === null ? $facultyData['shortname'] : $oldFacultyShortName) === $faculty['shortname']) {
                 $faculty = $facultyData;
                 $this->saveScheduleData($scheduleData);
                 return $this->jsonResponse(true, 'Faculty updated successfully', $faculty);
@@ -156,7 +159,7 @@ class ServiceSchedule
 
         $scheduleData[] = $facultyData;
         $this->saveScheduleData($scheduleData);
-        return $this->jsonResponse(true, 'Faculty added successfully', $facultyData);
+        return $this->jsonResponse(true, 'Faculty added successfully', $facultyData, 201);
     }
 
     public function saveCourse(string $facultyShortname, array $courseData, ?string $oldCourseName = null): JsonResponse
@@ -165,21 +168,18 @@ class ServiceSchedule
         foreach ($scheduleData as &$faculty) {
             if ($faculty['shortname'] === $facultyShortname) {
                 foreach ($faculty['course'] as &$course) {
-                    if ($oldCourseName === $course['name']) {
+                    if (($oldCourseName === null ? $courseData['name'] : $oldCourseName) === $course['name']) {
                         $course = $courseData;
                         $this->saveScheduleData($scheduleData);
                         return $this->jsonResponse(true, 'Course updated successfully', $courseData);
                     }
                 }
-                $faculty['course'][] = $courseData;
-                $this->saveScheduleData($scheduleData);
-                return $this->jsonResponse(true, 'Course added successfully', $courseData);
             }
         }
         return $this->jsonResponse(false, 'Faculty not found', null, 404);
     }
 
-    public function saveGroup(string $facultyShortname, string $courseName, array $groupData, ?string $oldGroupName): JsonResponse
+    public function saveGroup(string $facultyShortname, string $courseName, array $groupData, ?string $oldGroupName = null): JsonResponse
     {
         $scheduleData = $this->loadScheduleData();
         foreach ($scheduleData as &$faculty) {
@@ -187,7 +187,7 @@ class ServiceSchedule
                 foreach ($faculty['course'] as &$course) {
                     if ($course['name'] === $courseName) {
                         foreach ($course['groups'] as &$group) {
-                            if ($oldGroupName === $group['group_name']) {
+                            if (($oldGroupName === null ? $groupData['group_name'] : $oldGroupName) === $group['group_name']) {
                                 $group = $groupData;
                                 $this->saveScheduleData($scheduleData);
                                 return $this->jsonResponse(true, 'Group updated successfully', $groupData);
@@ -195,7 +195,7 @@ class ServiceSchedule
                         }
                         $course['groups'][] = $groupData;
                         $this->saveScheduleData($scheduleData);
-                        return $this->jsonResponse(true, 'Group added successfully', $groupData);
+                        return $this->jsonResponse(true, 'Group added successfully', $groupData, 201);
                     }
                 }
             }
@@ -203,6 +203,7 @@ class ServiceSchedule
         return $this->jsonResponse(false, 'Faculty or Course not found', null, 404);
     }
 
+    // Збереження в json
     private function saveScheduleData(array $scheduleData): void
     {
         file_put_contents($this->filePath, json_encode($scheduleData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);

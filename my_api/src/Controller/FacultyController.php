@@ -17,7 +17,7 @@ class FacultyController extends AbstractController
         $this->ScheduleService = $scheduleService;
     }
 
-    // Метод для создания нового факультета
+    // Створення факультету
     #[Route('/api/faculty/create', methods: ['POST'])]
     public function createFaculty(Request $request): JsonResponse
     {
@@ -28,7 +28,7 @@ class FacultyController extends AbstractController
 
         $faculty = $this->ScheduleService->find($data['shortname']);
         if (!$faculty instanceof JsonResponse) {
-            return $this->ScheduleService->jsonResponse(false, 'Faculty with this "shortname" already exist', status: 400);
+            return $this->ScheduleService->jsonResponse(false, 'Faculty with this "shortname" already exist', status: 409);
         }
 
         $newFaculty = [
@@ -40,14 +40,18 @@ class FacultyController extends AbstractController
         return $this->ScheduleService->saveFaculty($newFaculty);
     }
     
-    // Метод для оновлення факультету
+    // Зміна короткої назви або/і повної назви факультету
     #[Route('/api/{oldFacultyShortName}', methods: ['PATCH'])]
     public function updateFaculty(string $oldFacultyShortName, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['name']) && !isset($data['shortname'])) {
-            return $this->ScheduleService->jsonResponse(false, 'At least one of "name" or "shortname" fields are required', status: 400);
+        if (!isset($data['name'], ($data['shortname']))) {
+            return $this->ScheduleService->jsonResponse(false, '"shortname" field is required', status: 400);
+        }
+
+        if (!$this->ScheduleService->find($data["shortname"]) instanceof JsonResponse) {
+            return $this->ScheduleService->jsonResponse(false, 'Provided "shortname" already in use', status: 409);
         }
 
         $faculty = $this->ScheduleService->find($oldFacultyShortName);
@@ -65,7 +69,7 @@ class FacultyController extends AbstractController
         return $this->ScheduleService->saveFaculty($faculty['faculty'], $oldFacultyShortName);
     }
 
-    // Метод для удаления факультета и его вмісту
+    // Видалення факультету
     #[Route('/api/{facultyShortName}', methods: ['DELETE'])]
     public function deleteFaculty(string $facultyShortName): JsonResponse
     {

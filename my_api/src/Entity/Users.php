@@ -35,7 +35,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-        // можна додати код для очищення чутливих даних, якщо потрібно
+    
     }
 
     public function setLogin(string $login): self
@@ -50,7 +50,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // Реалізація методу з PasswordAuthenticatedUserInterface
     public function getUserPassword(): string
     {
         return $this->password;
