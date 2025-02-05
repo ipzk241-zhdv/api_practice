@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class GroupsController extends AbstractController
 {
@@ -18,6 +19,7 @@ class GroupsController extends AbstractController
     }
 
     // Розклад певної групи
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/schedule/{facultyName}/{courseName}/{groupName}', methods: ['GET'])]
     public function getScheduleGroupByCourse(string $facultyName, string $courseName, string $groupName): JsonResponse
     {
@@ -31,6 +33,7 @@ class GroupsController extends AbstractController
 
     // Створення групи
     #[Route('/api/{facultyName}/{courseName}/createGroup', methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function createGroup(Request $request, string $facultyName, string $courseName): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -70,6 +73,7 @@ class GroupsController extends AbstractController
 
     // Зміна назви групи
     #[Route('/api/{facultyName}/{courseName}/{oldGroupName}', methods: ['PATCH'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function updateGroupName(Request $request, string $facultyName, string $courseName, string $oldGroupName): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -94,6 +98,7 @@ class GroupsController extends AbstractController
 
     // Видалення групи
     #[Route('/api/{facultyName}/{courseName}/{groupName}', methods: ['DELETE'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function deleteGroup(string $facultyName, string $courseName, string $groupName): JsonResponse
     {
         $entities = $this->ScheduleService->find($facultyName, $courseName);
@@ -112,6 +117,7 @@ class GroupsController extends AbstractController
 
     // Створення заняття
     #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function createClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -145,6 +151,7 @@ class GroupsController extends AbstractController
 
     // Редагування заннятя
     #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['PATCH'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function updateClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -178,31 +185,32 @@ class GroupsController extends AbstractController
         return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
     }
 
-        // Видалення заннятя
-        #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['DELETE'])]
-        public function deleteClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
-        {
-            $data = json_decode($request->getContent(), true);
-            if (!isset($data['time'], $data['week'], $data['day'])) {
-                return $this->ScheduleService->jsonResponse(false, '"time", "week" and "day" are required', status: 400);
-            }
-    
-            $entities = $this->ScheduleService->find($facultyName, $courseName, $groupName);
-            if ($entities instanceof JsonResponse) {
-                return $entities;
-            }
-    
-            $group = $entities['group'];
-            foreach ($data as $key => $value) {
-                $$key = $value;
-            }
-    
-            $classesKey = array_search($time, array_column($group['schedule'][$week][$day], 'time'));
-            if ($classesKey === false) {
-                return $this->ScheduleService->jsonResponse(false, "Classes on that time not found", status: 404);
-            }
-
-            array_splice($group['schedule'][$week][$day], $classesKey, 1);
-            return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
+    // Видалення заннятя
+    #[Route('/api/{facultyName}/{courseName}/{groupName}/classes', methods: ['DELETE'])]
+    #[IsGranted("ROLE_ADMIN")]
+    public function deleteClass(Request $request, string $facultyName, string $courseName, string $groupName): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['time'], $data['week'], $data['day'])) {
+            return $this->ScheduleService->jsonResponse(false, '"time", "week" and "day" are required', status: 400);
         }
+
+        $entities = $this->ScheduleService->find($facultyName, $courseName, $groupName);
+        if ($entities instanceof JsonResponse) {
+            return $entities;
+        }
+
+        $group = $entities['group'];
+        foreach ($data as $key => $value) {
+            $$key = $value;
+        }
+
+        $classesKey = array_search($time, array_column($group['schedule'][$week][$day], 'time'));
+        if ($classesKey === false) {
+            return $this->ScheduleService->jsonResponse(false, "Classes on that time not found", status: 404);
+        }
+
+        array_splice($group['schedule'][$week][$day], $classesKey, 1);
+        return $this->ScheduleService->saveGroup($facultyName, $courseName, $group);
+    }
 }

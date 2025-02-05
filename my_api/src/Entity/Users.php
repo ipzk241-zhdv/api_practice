@@ -11,6 +11,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
     private int $id;
+    private array $roles = ['ROLE_USER', 'ROLE_ADMIN'];
 
     #[ORM\Column(type: "string", unique: true)]
     private string $login;
@@ -25,7 +26,13 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        return $this->roles;
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+        return $this;
     }
 
     public function getPassword(): ?string

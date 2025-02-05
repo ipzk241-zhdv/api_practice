@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CoursesController extends AbstractController
 {
@@ -18,6 +19,7 @@ class CoursesController extends AbstractController
     }
 
     // Створення нового курсу
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/{facultyShortName}/createCourse', methods: ['POST'])]
     public function createCourse(string $facultyShortName, Request $request): JsonResponse
     {
@@ -45,6 +47,7 @@ class CoursesController extends AbstractController
     }
 
     // Зміна назви курсу
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/{facultyShortName}/{oldCourseName}', methods: ['PATCH'])]
     public function updateCourse(string $facultyShortName, string $oldCourseName, Request $request): JsonResponse
     {
@@ -69,6 +72,7 @@ class CoursesController extends AbstractController
     }
 
     // Видалення курсу
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/{facultyShortName}/{courseName}', methods: ['DELETE'])]
     public function deleteCourse(string $facultyShortName, string $courseName): JsonResponse
     {

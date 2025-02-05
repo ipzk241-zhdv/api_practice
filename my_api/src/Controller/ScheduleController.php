@@ -6,6 +6,7 @@ use App\Service\ServiceSchedule;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class ScheduleController extends AbstractController
 {
@@ -17,6 +18,7 @@ class ScheduleController extends AbstractController
     }
 
     // Список факультетів
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/faculties', methods: ['GET'])]
     public function getFacultiesList(): JsonResponse
     {
@@ -28,6 +30,7 @@ class ScheduleController extends AbstractController
     }
 
     // Список курсів вказаного факультету
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/{facultyShortname}/courses', methods: ['GET'])]
     public function getCoursesList(string $facultyShortname): JsonResponse
     {
@@ -40,6 +43,7 @@ class ScheduleController extends AbstractController
     }
 
     // Список груп вказаного курсу і факультету
+    #[IsGranted("ROLE_ADMIN")]
     #[Route('/api/{facultyShortname}/{courseName}/groups', methods: ['GET'])]
     public function getGroupsList(string $facultyShortname, string $courseName): JsonResponse
     {
